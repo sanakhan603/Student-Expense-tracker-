@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Expense & Budget Tracker - MAD Assignment 1</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            dark: '#090d16',
+                            card: '#111827',
+                            border: '#1f2937'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f9fafb;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-4">
+
+    <!-- Mobile Frame Outer Simulator -->
+    <div class="w-full max-w-md h-screen sm:h-[880px] bg-slate-950 sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative border border-slate-800/80">
+        
+        <!-- Status Bar Decorator (Desktop View) -->
+        <div class="hidden sm:flex justify-between items-center px-6 pt-3 pb-1 text-xs text-slate-400 font-medium z-30 bg-slate-950">
+            <span id="clock">09:41</span>
+            <div class="w-20 h-4 bg-slate-900 rounded-full mx-auto border border-slate-800"></div>
+            <div class="flex items-center gap-1.5 text-slate-400">
+                <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+                <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                <i data-lucide="battery-charging" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-bold">
+                    <i data-lucide="wallet" class="w-5 h-5 stroke-[2.5]"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-white tracking-tight leading-none">SmartSpend</h1>
+                    <p class="text-[11px] text-slate-400 font-medium mt-0.5">MAD Assignment 1</p>
+                </div>
+            </div>
+            <button onclick="openModal('budgetModal')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/60 transition-all text-xs flex items-center gap-1.5 font-medium">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Set Budget</span>
+            </button>
+        </header>
+
+        <!-- Dynamic Body Content -->
+        <main id="screenContainer" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4 relative pb-20">
+            <!-- Rendered JS Dynamic Screens -->
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-2 flex justify-around items-center z-20">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-emerald-400 font-semibold">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="text-[10px]">Dashboard</span>
+            </button>
+            <button onclick="switchTab('expenses')" id="nav-expenses" class="nav-item flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-200">
+                <i data-lucide="receipt" class="w-5 h-5"></i>
+                <span class="text-[10px]">Expenses</span>
+            </button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-item flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-200">
+                <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                <span class="text-[10px]">Analytics</span>
+            </button>
+            <button onclick="switchTab('info')" id="nav-info" class="nav-item flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-200">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+                <span class="text-[10px]">Report Info</span>
+            </button>
+        </nav>
+
+        <!-- Floating Add Button -->
+        <button onclick="openModal('expenseModal')" class="absolute bottom-16 right-4 w-12 h-12 bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 active:scale-95 text-slate-950 font-bold rounded-full shadow-lg shadow-emerald-500/25 flex items-center justify-center z-30 transition-all">
+            <i data-lucide="plus" class="w-6 h-6 stroke-[3]"></i>
+        </button>
+
+    </div>
+
+    <!-- Expense Modal (Add / Edit) -->
+    <div id="expenseModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 id="modalTitle" class="text-sm font-bold text-white">Add New Expense</h3>
+                <button onclick="closeModal('expenseModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="expenseForm" onsubmit="handleSaveExpense(event)" class="space-y-3">
+                <input type="hidden" id="expenseId">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">Expense Title</label>
+                    <input type="text" id="expenseTitle" required placeholder="e.g. Reference Books" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Amount ($)</label>
+                        <input type="number" step="0.01" min="0.01" id="expenseAmount" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Category</label>
+                        <select id="expenseCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="Education">Education</option>
+                            <option value="Food">Food</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">Date</label>
+                    <input type="date" id="expenseDate" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('expenseModal')" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Monthly Allowance Budget Modal -->
+    <div id="budgetModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-white">Update Monthly Budget</h3>
+                <button onclick="closeModal('budgetModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleSaveBudget(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">Total Budget Limit ($)</label>
+                    <input type="number" step="1" min="1" id="monthlyBudgetInput" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('budgetModal')" class="w-1/2 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        const defaultExpenses = [
+            { id: '1', title: 'Calculus Textbooks & Lab Manuals', amount: 120.00, category: 'Education', date: '2026-10-15' },
+            { id: '2', title: 'Monthly Campus Cafeteria Pass', amount: 85.50, category: 'Food', date: '2026-10-18' },
+            { id: '3', title: 'Bus & Metro Transit Pass', amount: 45.00, category: 'Transport', date: '2026-10-20' },
+            { id: '4', title: 'Hostel Room Utilities Share', amount: 65.00, category: 'Housing', date: '2026-10-25' },
+            { id: '5', title: 'Stationery & Printing Supplies', amount: 18.25, category: 'Education', date: '2026-10-28' }
+        ];
+
+        let state = {
+            budget: parseFloat(localStorage.getItem('smartspend_budget')) || 600.00,
+            expenses: JSON.parse(localStorage.getItem('smartspend_expenses')) || defaultExpenses,
+            activeTab: 'dashboard',
+            searchTerm: '',
+            filterCategory: 'All',
+            sortBy: 'date-desc'
+        };
+
+        const categoryMeta = {
+            Education: { icon: 'book-open', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+            Food: { icon: 'utensils', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+            Transport: { icon: 'bus', color: 'text-amber-400', bg: 'bg-amber-500/10' },
+            Housing: { icon: 'home', color: 'text-rose-400', bg: 'bg-rose-500/10' },
+            Entertainment: { icon: 'gamepad-2', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+            Other: { icon: 'tag', color: 'text-slate-400', bg: 'bg-slate-500/10' }
+        };
+
+        function saveData() {
+            localStorage.setItem('smartspend_budget', state.budget);
+            localStorage.setItem('smartspend_expenses', JSON.stringify(state.expenses));
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const clockEl = document.getElementById('clock');
+            if(clockEl) clockEl.innerText = `${hours}:${minutes}`;
+        }
+        setInterval(updateClock, 1000);
+
+        function switchTab(tabName) {
+            state.activeTab = tabName;
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.className = "nav-item flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-slate-400 hover:text-slate-200";
+            });
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = "nav-item flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all text-emerald-400 font-semibold";
+            }
+            render();
+        }
+
+        function openModal(id, editId = null) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'expenseModal') {
+                if (editId) {
+                    const item = state.expenses.find(e => e.id === editId);
+                    if (item) {
+                        document.getElementById('modalTitle').innerText = 'Edit Expense';
+                        document.getElementById('expenseId').value = item.id;
+                        document.getElementById('expenseTitle').value = item.title;
+                        document.getElementById('expenseAmount').value = item.amount;
+                        document.getElementById('expenseCategory').value = item.category;
+                        document.getElementById('expenseDate').value = item.date;
+                    }
+                } else {
+                    document.getElementById('modalTitle').innerText = 'Add New Expense';
+                    document.getElementById('expenseForm').reset();
+                    document.getElementById('expenseId').value = '';
+                    document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+                }
+            } else if (id === 'budgetModal') {
+                document.getElementById('monthlyBudgetInput').value = state.budget;
+            }
+            lucide.createIcons();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function handleSaveExpense(e) {
+            e.preventDefault();
+            const id = document.getElementById('expenseId').value;
+            const title = document.getElementById('expenseTitle').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('expenseCategory').value;
+            const date = document.getElementById('expenseDate').value;
+
+            if (id) {
+                state.expenses = state.expenses.map(exp => exp.id === id ? { id, title, amount, category, date } : exp);
+            } else {
+                const newExp = { id: Date.now().toString(), title, amount, category, date };
+                state.expenses.unshift(newExp);
+            }
+            saveData();
+            closeModal('expenseModal');
+            render();
+        }
+
+        function handleSaveBudget(e) {
+            e.preventDefault();
+            const val = parseFloat(document.getElementById('monthlyBudgetInput').value);
+            if (val > 0) {
+                state.budget = val;
+                saveData();
+                closeModal('budgetModal');
+                render();
+            }
+        }
+
+        function deleteExpense(id) {
+            state.expenses = state.expenses.filter(e => e.id !== id);
+            saveData();
+            render();
+        }
+
+        function render() {
+            const container = document.getElementById('screenContainer');
+            container.innerHTML = '';
+
+            if (state.activeTab === 'dashboard') renderDashboard(container);
+            else if (state.activeTab === 'expenses') renderExpensesScreen(container);
+            else if (state.activeTab === 'analytics') renderAnalyticsScreen(container);
+            else if (state.activeTab === 'info') renderInfoScreen(container);
+
+            lucide.createIcons();
+        }
+
+        // 1. DASHBOARD TAB
+        function renderDashboard(container) {
+            const totalSpent = state.expenses.reduce((acc, curr) => acc + curr.amount, 0);
+            const remaining = state.budget - totalSpent;
+            const percentUsed = Math.min(100, Math.round((totalSpent / state.budget) * 100)) || 0;
+
+            let budgetStatusColor = "text-emerald-400";
+            let progressBarColor = "bg-emerald-500";
+            if (percentUsed > 80 && percentUsed <= 100) {
+                budgetStatusColor = "text-amber-400";
+                progressBarColor = "bg-amber-500";
+            } else if (percentUsed > 100) {
+                budgetStatusColor = "text-rose-400";
+                progressBarColor = "bg-rose-500";
+            }
+
+            container.innerHTML = `
+                <!-- Budget Card -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 shadow-xl relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monthly Allowance</span>
+                            <h2 class="text-2xl font-extrabold text-white mt-0.5">$${state.budget.toFixed(2)}</h2>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-900 ${budgetStatusColor} border border-slate-800">
+                            ${percentUsed}% Spent
+                        </span>
+                    </div>
+
+                    <div class="w-full bg-slate-950 rounded-full h-2.5 mb-3 overflow-hidden border border-slate-800">
+                        <div class="${progressBarColor} h-2.5 rounded-full transition-all duration-500" style="width: ${percentUsed}%"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 text-xs">
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Total Outflow</span>
+                            <span class="font-bold text-rose-400">$${totalSpent.toFixed(2)}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Available Funds</span>
+                            <span class="font-bold ${remaining < 0 ? 'text-rose-400' : 'text-emerald-400'}">$${remaining.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Expenses Section -->
+                <div class="flex justify-between items-center px-1 pt-1">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Recent Outflows</h3>
+                    <button onclick="switchTab('expenses')" class="text-xs text-emerald-400 font-semibold hover:underline">View All</button>
+                </div>
+
+                <div class="space-y-2">
+                    ${state.expenses.length === 0 ? `
+                        <div class="text-center py-8 text-slate-500 text-xs bg-slate-900/40 rounded-2xl border border-slate-800/60">
+                            <i data-lucide="receipt" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
+                            <p>No transactions added yet.</p>
+                        </div>
+                    ` : state.expenses.slice(0, 4).map(exp => {
+                        const meta = categoryMeta[exp.category] || categoryMeta.Other;
+                        return `
+                            <div class="bg-slate-900/70 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl ${meta.bg} ${meta.color} flex items-center justify-center font-bold">
+                                        <i data-lucide="${meta.icon}" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-semibold text-white">${exp.title}</h4>
+                                        <span class="text-[10px] text-slate-400">${exp.category} • ${exp.date}</span>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold text-slate-200">-$${exp.amount.toFixed(2)}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // 2. EXPENSES LIST TAB (Search, Filter, Sort & CRUD)
+        function renderExpensesScreen(container) {
+            let filtered = state.expenses.filter(exp => {
+                const matchesSearch = exp.title.toLowerCase().includes(state.searchTerm.toLowerCase());
+                const matchesCat = state.filterCategory === 'All' || exp.category === state.filterCategory;
+                return matchesSearch && matchesCat;
+            });
+
+            filtered.sort((a, b) => {
+                if (state.sortBy === 'date-desc') return new Date(b.date) - new Date(a.date);
+                if (state.sortBy === 'date-asc') return new Date(a.date) - new Date(b.date);
+                if (state.sortBy === 'amount-desc') return b.amount - a.amount;
+                if (state.sortBy === 'amount-asc') return a.amount - b.amount;
+                return 0;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-500"></i>
+                        <input type="text" placeholder="Search expenses..." value="${state.searchTerm}" oninput="state.searchTerm = this.value; renderExpensesScreen(document.getElementById('screenContainer'))" class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <!-- Filter / Sort Grid -->
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <select onchange="state.filterCategory = this.value; renderExpensesScreen(document.getElementById('screenContainer'))" class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                            <option value="All" ${state.filterCategory === 'All' ? 'selected' : ''}>All Categories</option>
+                            <option value="Education" ${state.filterCategory === 'Education' ? 'selected' : ''}>Education</option>
+                            <option value="Food" ${state.filterCategory === 'Food' ? 'selected' : ''}>Food</option>
+                            <option value="Transport" ${state.filterCategory === 'Transport' ? 'selected' : ''}>Transport</option>
+                            <option value="Housing" ${state.filterCategory === 'Housing' ? 'selected' : ''}>Housing</option>
+                            <option value="Entertainment" ${state.filterCategory === 'Entertainment' ? 'selected' : ''}>Entertainment</option>
+                            <option value="Other" ${state.filterCategory === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+
+                        <select onchange="state.sortBy = this.value; renderExpensesScreen(document.getElementById('screenContainer'))" class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                            <option value="date-desc" ${state.sortBy === 'date-desc' ? 'selected' : ''}>Date (Newest)</option>
+                            <option value="date-asc" ${state.sortBy === 'date-asc' ? 'selected' : ''}>Date (Oldest)</option>
+                            <option value="amount-desc" ${state.sortBy === 'amount-desc' ? 'selected' : ''}>Amount (High to Low)</option>
+                            <option value="amount-asc" ${state.sortBy === 'amount-asc' ? 'selected' : ''}>Amount (Low to High)</option>
+                        </select>
+                    </div>
+
+                    <!-- Items List -->
+                    <div class="space-y-2 pt-1">
+                        ${filtered.length === 0 ? `
+                            <div class="text-center py-10 text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800">
+                                <p>No matching expenses found.</p>
+                            </div>
+                        ` : filtered.map(exp => {
+                            const meta = categoryMeta[exp.category] || categoryMeta.Other;
+                            return `
+                                <div class="bg-slate-900/70 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl ${meta.bg} ${meta.color} flex items-center justify-center font-bold">
+                                            <i data-lucide="${meta.icon}" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-semibold text-white leading-tight">${exp.title}</h4>
+                                            <span class="text-[10px] text-slate-400">${exp.category} • ${exp.date}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-bold text-slate-200">-$${exp.amount.toFixed(2)}</span>
+                                        <button onclick="openModal('expenseModal', '${exp.id}')" class="p-1 text-slate-400 hover:text-emerald-400 transition-colors"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                        <button onclick="deleteExpense('${exp.id}')" class="p-1 text-slate-400 hover:text-rose-400 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // 3. ANALYTICS TAB
+        function renderAnalyticsScreen(container) {
+            const categoryTotals = {};
+            let totalSpent = 0;
+
+            state.expenses.forEach(exp => {
+                categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+                totalSpent += exp.amount;
+            });
+
+            const categories = Object.keys(categoryTotals);
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Category Outflow Breakdown</h3>
+                        
+                        ${totalSpent === 0 ? `
+                            <p class="text-xs text-slate-500 text-center py-4">No spending data logged.</p>
+                        ` : `
+                            <div class="space-y-3">
+                                ${categories.map(cat => {
+                                    const amt = categoryTotals[cat];
+                                    const pct = Math.round((amt / totalSpent) * 100);
+                                    const meta = categoryMeta[cat] || categoryMeta.Other;
+                                    return `
+                                        <div>
+                                            <div class="flex justify-between text-xs mb-1">
+                                                <span class="text-slate-300 font-medium flex items-center gap-1.5">
+                                                    <i data-lucide="${meta.icon}" class="w-3.5 h-3.5 ${meta.color}"></i> ${cat}
+                                                </span>
+                                                <span class="text-slate-400 font-semibold">$${amt.toFixed(2)} (${pct}%)</span>
+                                            </div>
+                                            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                                                <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full" style="width: ${pct}%"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `}
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Metrics Summary</h3>
+                        <div class="flex justify-between items-center text-xs py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Total Transactions</span>
+                            <span class="font-bold text-slate-200">${state.expenses.length}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Average Outflow</span>
+                            <span class="font-bold text-slate-200">$${state.expenses.length > 0 ? (totalSpent / state.expenses.length).toFixed(2) : '0.00'}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs py-1.5">
+                            <span class="text-slate-400">Highest Outflow Category</span>
+                            <span class="font-bold text-emerald-400">
+                                ${categories.length > 0 ? categories.reduce((a, b) => categoryTotals[a] > categoryTotals[b] ? a : b) : 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // 4. DOCUMENTATION REPORT TAB
+        function renderInfoScreen(container) {
+            container.innerHTML = `
+                <div class="space-y-4 text-xs">
+                    
+                    <!-- Cover Header -->
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-4 rounded-2xl space-y-2">
+                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">Assignment Report</span>
+                        <h2 class="text-sm font-bold text-white">Student Expense & Budget Tracker (SmartSpend)</h2>
+                        <p class="text-slate-400 text-[11px]">Course: Mobile Application Development (MAD)<br>Target Date: October 30, 2026</p>
+                    </div>
+
+                    <!-- Team Members & 50-50 Contribution -->
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-3">
+                        <h3 class="font-bold text-slate-200 uppercase tracking-wider text-[11px] border-b border-slate-800 pb-1.5">Team & Contribution Matrix</h3>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+                                <h4 class="font-bold text-emerald-400 text-xs">Sana Khan</h4>
+                                <p class="text-[10px] text-slate-400">Contribution: 50%</p>
+                                <p class="text-[10px] text-slate-300 mt-1.5 leading-tight">• UI Screenflow & Wireframing<br>• MoSCoW Requirements Setup<br>• Style Guide Definition</p>
+                            </div>
+                            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+                                <h4 class="font-bold text-teal-400 text-xs">Imdad Ullah</h4>
+                                <p class="text-[10px] text-slate-400">Contribution: 50%</p>
+                                <p class="text-[10px] text-slate-300 mt-1.5 leading-tight">• Tech Stack Justification<br>• Work Plan & Risk Matrix<br>• Hello World & Repo Setup</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Idea & Problem Statement -->
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-200 uppercase tracking-wider text-[11px] border-b border-slate-800 pb-1.5">1. Problem Statement & Value Prop</h3>
+                        <p class="text-slate-300 leading-relaxed">
+                            <strong>Problem:</strong> University students managing fixed monthly allowances often overspend in early weeks due to lack of real-time visibility over minor daily expenditures.
+                        </p>
+                        <p class="text-slate-300 leading-relaxed">
+                            <strong>Value Proposition:</strong> "For university students who need focused budget control, SmartSpend is a mobile expense tracker that provides immediate category spending alerts and local offline storage."
+                        </p>
+                    </div>
+
+                    <!-- MoSCoW Requirements Matrix -->
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-200 uppercase tracking-wider text-[11px] border-b border-slate-800 pb-1.5">2. Requirements Specification</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-[10px]">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400">
+                                        <th class="py-1.5">ID</th>
+                                        <th class="py-1.5">Requirement Statement</th>
+                                        <th class="py-1.5">Priority</th>
+                                        <th class="py-1.5">Assigned</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                    <tr><td class="py-1.5 font-mono">FR-01</td><td class="py-1.5">User can create expense with amount, title, date</td><td class="text-emerald-400 font-bold">Must</td><td>A2</td></tr>
+                                    <tr><td class="py-1.5 font-mono">FR-02</td><td class="py-1.5">User can view allowance limit & remaining balance</td><td class="text-emerald-400 font-bold">Must</td><td>A2</td></tr>
+                                    <tr><td class="py-1.5 font-mono">FR-03</td><td class="py-1.5">User can edit and delete expenses (CRUD)</td><td class="text-emerald-400 font-bold">Must</td><td>A3</td></tr>
+                                    <tr><td class="py-1.5 font-mono">FR-04</td><td class="py-1.5">Persist data locally on device (LocalStorage / Hive)</td><td class="text-emerald-400 font-bold">Must</td><td>A3</td></tr>
+                                    <tr><td class="py-1.5 font-mono">FR-05</td><td class="py-1.5">Filter expenses by category and search by title</td><td class="text-indigo-400 font-bold">Should</td><td>A3</td></tr>
+                                    <tr><td class="py-1.5 font-mono">FR-06</td><td class="py-1.5">Sort expenses by date and amount</td><td class="text-indigo-400 font-bold">Should</td><td>A3</td></tr>
+                                    <tr><td class="py-1.5 font-mono">FR-07</td><td class="py-1.5">Visual charts for category spending ratios</td><td class="text-amber-400 font-bold">Could</td><td>A4</td></tr>
+                                    <tr><td class="py-1.5 font-mono">NFR-01</td><td class="py-1.5">App UI responds in under 1.5s on mobile hardware</td><td class="text-emerald-400 font-bold">Must</td><td>A4</td></tr>
+                                    <tr><td class="py-1.5 font-mono">NFR-02</td><td class="py-1.5">Touch targets are at least 48x48 dp</td><td class="text-emerald-400 font-bold">Must</td><td>A2</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack Matrix -->
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-200 uppercase tracking-wider text-[11px] border-b border-slate-800 pb-1.5">3. Technology Stack Justification</h3>
+                        <p class="text-slate-300"><strong>Chosen Stack:</strong> Flutter / Dart (Cross-Platform) with Hive NoSQL Local Storage.</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-[10px] mt-1">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400">
+                                        <th class="py-1.5">Criteria</th>
+                                        <th class="py-1.5">Flutter (Chosen)</th>
+                                        <th class="py-1.5">React Native</th>
+                                        <th class="py-1.5">Native Android</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                    <tr><td class="py-1.5 font-medium">Learning Curve</td><td>Moderate</td><td>Low (JS)</td><td>High (Kotlin/XML)</td></tr>
+                                    <tr><td class="py-1.5 font-medium">UI Consistency</td><td>Pixel-identical</td><td>Varies by OS</td><td>Android only</td></tr>
+                                    <tr><td class="py-1.5 font-medium">Performance</td><td>Native Compiled</td><td>JS Bridge</td><td>Direct Native</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Work Plan & Risks -->
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-200 uppercase tracking-wider text-[11px] border-b border-slate-800 pb-1.5">4. Work Plan & Risk Mitigation</h3>
+                        <div class="space-y-1.5 text-slate-300">
+                            <p><strong>A2 (UI & Nav):</strong> Sana Khan - Build wireframe layouts & navigation shell.</p>
+                            <p><strong>A3 (Data & CRUD):</strong> Imdad Ullah - Connect local persistent DB & CRUD forms.</p>
+                            <p><strong>A4 (Polish & Test):</strong> Sana Khan & Imdad Ullah - Analytics charts & release build.</p>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/60">
+                            <h4 class="font-semibold text-slate-200 text-[11px] mb-1">Risk Plan:</h4>
+                            <ul class="list-disc list-inside text-slate-400 text-[10px] space-y-1">
+                                <li><strong>Risk:</strong> SQLite state persistence migration errors. <br><em class="text-slate-300 pl-4">Mitigation: Use Hive Key-Value adapter fallbacks.</em></li>
+                                <li><strong>Risk:</strong> Assignment milestone delay during midterm week. <br><em class="text-slate-300 pl-4">Mitigation: 3-day buffer schedule on GitHub project board.</em></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- GitHub Status -->
+                    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center space-y-1">
+                        <i data-lucide="github" class="w-6 h-6 mx-auto text-slate-300"></i>
+                        <p class="font-semibold text-slate-200">GitHub Repository Setup</p>
+                        <p class="text-[10px] text-slate-400 font-mono">github.com/sana-imdad/smartspend-mad</p>
+                        <span class="inline-block mt-1 px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-bold">Hello World Status: RUNNING</span>
+                    </div>
+
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Initialize Web Application
+        window.onload = function() {
+            render();
+            updateClock();
+        };
+    </script>
+</body>
+</html>
